@@ -218,7 +218,7 @@ export default function Dashboard() {
           </div>
         ) : tareasFiltradas.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
-            <p className="text-4xl mb-3">📋</p>
+            <p className="text-4xl mb-3"></p>
             <p className="text-lg font-medium">Sin tareas</p>
             <p className="text-sm mt-1">{filtroEstado === 'todos' ? 'Crea tu primera tarea' : `No hay tareas con estado "${COLOR_ESTADO[filtroEstado]?.label}"`}</p>
           </div>
