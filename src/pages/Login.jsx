@@ -3,7 +3,7 @@
 //  Registro e inicio de sesión con validaciones completas
 // ============================================================
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
