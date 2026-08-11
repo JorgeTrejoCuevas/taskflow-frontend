@@ -161,36 +161,38 @@ export default function Login() {
     }
   };
 
-  const CampoPassword = ({
-    label,
-    value,
-    onChange,
-    verPass,
-    setVerPass,
-    error,
-    placeholder,
-  }) => (
+  function CampoPassword({ label, value, onChange, verPass, setVerPass, error, placeholder, autoComplete }) {
+  const inputRef = React.useRef(null)
+
+  const toggleVer = () => {
+    const pos = inputRef.current?.selectionStart
+    setVerPass(!verPass)
+    setTimeout(() => {
+      inputRef.current?.focus()
+      inputRef.current?.setSelectionRange(pos, pos)
+    }, 0)
+  }
+
+  return (
     <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1">
-        {label}
-      </label>
+      <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
       <div className="relative">
         <input
-          type={verPass ? "text" : "password"}
+          ref={inputRef}
+          type={verPass ? 'text' : 'password'}
           required
           placeholder={placeholder}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          autoComplete={autoComplete || 'current-password'}
+          onChange={e => onChange(e.target.value)}
           className={`w-full border rounded-xl px-3 py-2.5 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-[#EEEDFE] ${
-            error
-              ? "border-[#E24B4A]"
-              : "border-gray-200 focus:border-[#534AB7]"
+            error ? 'border-[#E24B4A]' : 'border-gray-200 focus:border-[#534AB7]'
           }`}
         />
         <button
           type="button"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => setVerPass(!verPass)}
+          onMouseDown={e => e.preventDefault()}
+          onClick={toggleVer}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
         >
           <IconoOjo visible={verPass} />
@@ -198,7 +200,8 @@ export default function Login() {
       </div>
       {error && <p className="text-xs text-[#E24B4A] mt-1">{error}</p>}
     </div>
-  );
+  )
+}
 
   return (
     <div className="min-h-screen bg-[#F8F7FF] flex flex-col">
