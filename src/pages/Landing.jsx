@@ -3,8 +3,9 @@
 //  Versión final con iconos reales de Font Awesome
 // ============================================================
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import emailjs from '@emailjs/browser'
 import Navbar from "../components/Navbar";
 
 const FEATURES = [
@@ -45,20 +46,28 @@ export default function Landing() {
   const [form, setForm] = useState({ nombre: "", correo: "", mensaje: "" });
   const [enviado, setEnviado] = useState(false);
 
-  const handleContacto = (e) => {
-    e.preventDefault();
-    if (!form.nombre || !form.correo || !form.mensaje) return;
-    const asunto = encodeURIComponent(`Mensaje de ${form.nombre} — TaskFlow`);
-    const cuerpo = encodeURIComponent(
-      `Nombre: ${form.nombre}\nCorreo: ${form.correo}\n\nMensaje:\n${form.mensaje}`,
-    );
-    window.open(
-      `mailto:taskflow724@gmail.com?subject=${asunto}&body=${cuerpo}`,
-    );
-    setEnviado(true);
-    setForm({ nombre: "", correo: "", mensaje: "" });
-    setTimeout(() => setEnviado(false), 4000);
-  };
+  const handleContacto = async (e) => {
+  e.preventDefault()
+  if (!form.nombre || !form.correo || !form.mensaje) return
+
+  try {
+    await emailjs.send(
+      'service_k1f3d8x',
+      'template_nd385fh',
+      {
+        from_name:   form.nombre,
+        from_email:  form.correo,
+        message:     form.mensaje,
+      },
+      '5KLJgZICseX_M5Fzs'
+    )
+    setEnviado(true)
+    setForm({ nombre: '', correo: '', mensaje: '' })
+    setTimeout(() => setEnviado(false), 4000)
+  } catch (error) {
+    console.error('Error al enviar:', error)
+  }
+}
 
   return (
     <div className="min-h-screen bg-white font-sans">
