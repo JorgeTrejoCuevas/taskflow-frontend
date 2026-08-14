@@ -53,7 +53,7 @@ export default function Landing() {
   try {
     await emailjs.send(
       'service_k1f3d8x',
-      'template_nd385fh',
+      'template_zqetxy6',
       {
         from_name:   form.nombre,
         from_email:  form.correo,
