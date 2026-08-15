@@ -51,6 +51,49 @@ function IconoOjo({ visible }) {
   );
 }
 
+// ── CampoPassword ahora vive FUERA de Login ──────────────
+// Así React lo reconoce siempre como el mismo componente
+// entre renders y no pierde el foco al escribir.
+function CampoPassword({
+  label,
+  value,
+  onChange,
+  verPass,
+  setVerPass,
+  error,
+  placeholder,
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-medium text-gray-600 mb-1">
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          type={verPass ? "text" : "password"}
+          required
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`w-full border rounded-xl px-3 py-2.5 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-[#EEEDFE] ${
+            error
+              ? "border-[#E24B4A]"
+              : "border-gray-200 focus:border-[#534AB7]"
+          }`}
+        />
+        <button
+          type="button"
+          onClick={() => setVerPass(!verPass)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        >
+          <IconoOjo visible={verPass} />
+        </button>
+      </div>
+      {error && <p className="text-xs text-[#E24B4A] mt-1">{error}</p>}
+    </div>
+  );
+}
+
 export default function Login() {
   const { usuario, login } = useAuth();
   const navigate = useNavigate();
@@ -160,44 +203,6 @@ export default function Login() {
       setErroresLog({ correo: "No se pudo conectar al servidor" });
     }
   };
-
-  const CampoPassword = ({
-    label,
-    value,
-    onChange,
-    verPass,
-    setVerPass,
-    error,
-    placeholder,
-  }) => (
-    <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1">
-        {label}
-      </label>
-      <div className="relative">
-        <input
-          type={verPass ? "text" : "password"}
-          required
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className={`w-full border rounded-xl px-3 py-2.5 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-[#EEEDFE] ${
-            error
-              ? "border-[#E24B4A]"
-              : "border-gray-200 focus:border-[#534AB7]"
-          }`}
-        />
-        <button
-          type="button"
-          onClick={() => setVerPass(!verPass)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-        >
-          <IconoOjo visible={verPass} />
-        </button>
-      </div>
-      {error && <p className="text-xs text-[#E24B4A] mt-1">{error}</p>}
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-[#F8F7FF] flex flex-col">
