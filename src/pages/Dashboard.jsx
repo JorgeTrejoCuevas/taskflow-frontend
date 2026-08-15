@@ -1,6 +1,7 @@
 // ============================================================
 //  TaskFlow — Dashboard.jsx
-//  Tablero principal con cerrar sesión y rutas protegidas
+//  Tablero principal con cerrar sesión, rutas protegidas
+//  y ahora: editar y eliminar tareas
 // ============================================================
 
 import { useState, useEffect } from 'react'
@@ -47,6 +48,11 @@ export default function Dashboard() {
   const [guardando, setGuardando]       = useState(false)
   const [filtroEstado, setFiltroEstado] = useState('todos')
 
+  // ── NUEVO: id de la tarea que se está editando (null = modo "crear") ──
+  const [tareaEditando, setTareaEditando] = useState(null)
+  // ── NUEVO: id de la tarea que se está eliminando (para deshabilitar botón mientras corre) ──
+  const [eliminando, setEliminando] = useState(null)
+
   useEffect(() => { cargarTareas() }, [])
 
   const cargarTareas = async () => {
@@ -65,12 +71,18 @@ export default function Dashboard() {
     setCargando(false)
   }
 }
-  const crearTarea = async (e) => {
+
+  // ── Crea o actualiza según si hay una tarea en edición ──
+  const guardarTarea = async (e) => {
   e.preventDefault()
   try {
     setGuardando(true)
-    const res = await fetch(API, {
-      method: 'POST',
+    const esEdicion = tareaEditando !== null
+    const url = esEdicion ? `${API}/${tareaEditando}` : API
+    const metodo = esEdicion ? 'PUT' : 'POST'
+
+    const res = await fetch(url, {
+      method: metodo,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${usuario?.token}`
@@ -79,14 +91,57 @@ export default function Dashboard() {
     })
     if (!res.ok) throw new Error()
     await cargarTareas()
-    setNuevaTarea(TAREA_VACIA)
-    setMostrarForm(false)
+    cerrarModal()
   } catch {
-    setError('No se pudo crear la tarea.')
+    setError(tareaEditando ? 'No se pudo actualizar la tarea.' : 'No se pudo crear la tarea.')
   } finally {
     setGuardando(false)
   }
 }
+
+  // ── NUEVO: abre el modal precargado con los datos de la tarea ──
+  const abrirEdicion = (tarea) => {
+    setTareaEditando(tarea.id)
+    setNuevaTarea({
+      titulo: tarea.titulo || '',
+      descripcion: tarea.descripcion || '',
+      categoria: tarea.categoria || 'Trabajo',
+      estado: tarea.estado || 'pendiente',
+      prioridad: tarea.prioridad || 'media',
+      fecha: tarea.fecha || TAREA_VACIA.fecha,
+      hora: tarea.hora || TAREA_VACIA.hora,
+    })
+    setMostrarForm(true)
+  }
+
+  // ── NUEVO: cierra el modal y limpia el estado de edición ──
+  const cerrarModal = () => {
+    setMostrarForm(false)
+    setTareaEditando(null)
+    setNuevaTarea(TAREA_VACIA)
+  }
+
+  // ── NUEVO: elimina una tarea con confirmación previa ──
+  const eliminarTarea = async (id) => {
+    const confirmar = window.confirm('¿Seguro que quieres eliminar esta tarea? Esta acción no se puede deshacer.')
+    if (!confirmar) return
+
+    try {
+      setEliminando(id)
+      const res = await fetch(`${API}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${usuario?.token}`
+        }
+      })
+      if (!res.ok) throw new Error()
+      await cargarTareas()
+    } catch {
+      setError('No se pudo eliminar la tarea.')
+    } finally {
+      setEliminando(null)
+    }
+  }
 
   const cambiarEstado = async (tarea) => {
   const siguiente = tarea.estado === 'pendiente' ? 'progreso'
@@ -143,7 +198,7 @@ export default function Dashboard() {
             {new Date().toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' })}
           </span>
           <button
-            onClick={() => setMostrarForm(true)}
+            onClick={() => { setTareaEditando(null); setNuevaTarea(TAREA_VACIA); setMostrarForm(true) }}
             className="bg-[#534AB7] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#3C3489] transition-colors"
           >
             + Nueva tarea
@@ -244,8 +299,20 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`text-xs font-semibold px-3 py-1 rounded-full ${est.badge}`}>{est.label}</span>
                     <button onClick={() => cambiarEstado(t)}
+                      title="Avanzar estado"
                       className="text-xs text-gray-400 hover:text-[#534AB7] transition-colors opacity-0 group-hover:opacity-100 border border-gray-200 hover:border-[#534AB7] rounded-lg px-2 py-1"
                     >→</button>
+                    {/* ── NUEVO: botón editar ── */}
+                    <button onClick={() => abrirEdicion(t)}
+                      title="Editar tarea"
+                      className="text-xs text-gray-400 hover:text-[#534AB7] transition-colors opacity-0 group-hover:opacity-100 border border-gray-200 hover:border-[#534AB7] rounded-lg px-2 py-1"
+                    >✏️</button>
+                    {/* ── NUEVO: botón eliminar ── */}
+                    <button onClick={() => eliminarTarea(t.id)}
+                      disabled={eliminando === t.id}
+                      title="Eliminar tarea"
+                      className="text-xs text-gray-400 hover:text-[#E24B4A] transition-colors opacity-0 group-hover:opacity-100 border border-gray-200 hover:border-[#E24B4A] rounded-lg px-2 py-1 disabled:opacity-40"
+                    >{eliminando === t.id ? '...' : '🗑️'}</button>
                   </div>
                 </div>
               )
@@ -254,15 +321,16 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Modal nueva tarea */}
+      {/* Modal nueva tarea / editar tarea */}
       {mostrarForm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="font-bold text-gray-800">Nueva tarea</h2>
-              <button onClick={() => setMostrarForm(false)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+              {/* ── NUEVO: título dinámico según modo ── */}
+              <h2 className="font-bold text-gray-800">{tareaEditando ? 'Editar tarea' : 'Nueva tarea'}</h2>
+              <button onClick={cerrarModal} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
             </div>
-            <form onSubmit={crearTarea} className="px-6 py-5 space-y-4">
+            <form onSubmit={guardarTarea} className="px-6 py-5 space-y-4">
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Título *</label>
                 <input required type="text" placeholder="¿Qué tienes que hacer?"
@@ -313,12 +381,12 @@ export default function Dashboard() {
                 ))}
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setMostrarForm(false)}
+                <button type="button" onClick={cerrarModal}
                   className="flex-1 border border-gray-200 text-gray-600 font-medium py-2.5 rounded-xl hover:bg-gray-50 text-sm"
                 >Cancelar</button>
                 <button type="submit" disabled={guardando}
                   className="flex-1 bg-[#534AB7] text-white font-semibold py-2.5 rounded-xl hover:bg-[#3C3489] text-sm disabled:opacity-60"
-                >{guardando ? 'Guardando...' : 'Guardar tarea'}</button>
+                >{guardando ? 'Guardando...' : (tareaEditando ? 'Actualizar tarea' : 'Guardar tarea')}</button>
               </div>
             </form>
           </div>
