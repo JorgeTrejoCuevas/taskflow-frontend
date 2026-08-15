@@ -6,6 +6,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import emailjs from "@emailjs/browser";
+
+// ── Credenciales de EmailJS ──────────────────────────────
+// Service ID y Template ID vienen del dashboard de EmailJS.
+// La Public Key NO es secreta, está pensada para usarse en el frontend.
+const EMAILJS_SERVICE_ID = "service_k1f3d8x";
+const EMAILJS_TEMPLATE_ID = "template_xtya9n4";
+const EMAILJS_PUBLIC_KEY = "5KLJgZICseX_M5Fzs";
 
 const FEATURES = [
   {
@@ -44,20 +52,40 @@ const STATS = [
 export default function Landing() {
   const [form, setForm] = useState({ nombre: "", correo: "", mensaje: "" });
   const [enviado, setEnviado] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [errorEnvio, setErrorEnvio] = useState("");
 
-  const handleContacto = (e) => {
+  const handleContacto = async (e) => {
     e.preventDefault();
     if (!form.nombre || !form.correo || !form.mensaje) return;
-    const asunto = encodeURIComponent(`Mensaje de ${form.nombre} — TaskFlow`);
-    const cuerpo = encodeURIComponent(
-      `Nombre: ${form.nombre}\nCorreo: ${form.correo}\n\nMensaje:\n${form.mensaje}`,
-    );
-    window.open(
-      `mailto:taskflow724@gmail.com?subject=${asunto}&body=${cuerpo}`,
-    );
-    setEnviado(true);
-    setForm({ nombre: "", correo: "", mensaje: "" });
-    setTimeout(() => setEnviado(false), 4000);
+
+    setEnviando(true);
+    setErrorEnvio("");
+
+    try {
+      // Los nombres (from_name, from_email, message) deben coincidir
+      // exactamente con las variables {{...}} definidas en tu template de EmailJS.
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          from_name: form.nombre,
+          from_email: form.correo,
+          message: form.mensaje,
+        },
+        { publicKey: EMAILJS_PUBLIC_KEY },
+      );
+
+      setEnviado(true);
+      setForm({ nombre: "", correo: "", mensaje: "" });
+      setTimeout(() => setEnviado(false), 4000);
+    } catch (err) {
+      setErrorEnvio(
+        "No se pudo enviar el mensaje. Intenta de nuevo en unos momentos.",
+      );
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -294,7 +322,7 @@ export default function Landing() {
                 </span>
               </a>
               <a
-                href="https://instagram.com/Task_flow444"
+                href="https://instagram.com/taskflow724"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 text-gray-600 hover:text-[#E1306C] transition-colors group"
@@ -302,7 +330,7 @@ export default function Landing() {
                 <span className="w-10 h-10 bg-[#EEEDFE] rounded-xl flex items-center justify-center group-hover:bg-[#E1306C] transition-colors">
                   <i className="fa-brands fa-instagram text-[#534AB7] group-hover:text-white"></i>
                 </span>
-                <span className="text-sm font-medium">@Task_flow444</span>
+                <span className="text-sm font-medium">@ow444</span>
               </a>
               <div className="flex items-center gap-3 text-gray-600">
                 <span className="w-10 h-10 bg-[#EEEDFE] rounded-xl flex items-center justify-center">
@@ -327,7 +355,14 @@ export default function Landing() {
             {enviado && (
               <div className="bg-[#E1F5EE] border border-[#1D9E75] text-[#085041] rounded-xl px-4 py-3 mb-6 text-sm font-medium flex items-center gap-2">
                 <i className="fa-solid fa-circle-check"></i>
-                ¡Mensaje listo! Se abrió tu cliente de correo para enviarlo.
+                ¡Mensaje enviado! Te responderemos pronto.
+              </div>
+            )}
+
+            {errorEnvio && (
+              <div className="bg-[#FCEBEB] border border-[#F09595] text-[#A32D2D] rounded-xl px-4 py-3 mb-6 text-sm font-medium flex items-center gap-2">
+                <i className="fa-solid fa-circle-exclamation"></i>
+                {errorEnvio}
               </div>
             )}
 
@@ -381,10 +416,11 @@ export default function Landing() {
               </div>
               <button
                 type="submit"
-                className="w-full bg-[#534AB7] text-white font-semibold py-3 rounded-xl hover:bg-[#3C3489] transition-colors flex items-center justify-center gap-2"
+                disabled={enviando}
+                className="w-full bg-[#534AB7] text-white font-semibold py-3 rounded-xl hover:bg-[#3C3489] transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
               >
                 <i className="fa-solid fa-paper-plane"></i>
-                Enviar mensaje
+                {enviando ? "Enviando..." : "Enviar mensaje"}
               </button>
             </form>
           </div>
@@ -419,13 +455,13 @@ export default function Landing() {
                 taskflow724@gmail.com
               </a>
               <a
-                href="https://instagram.com/Task_flow444"
+                href="https://instagram.com/taskflow724"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-[#AFA9EC] text-sm hover:text-white transition-colors"
               >
                 <i className="fa-brands fa-instagram w-4 text-center"></i>{" "}
-                @Task_flow444
+                @taskflow724
               </a>
               <p className="flex items-center gap-2 text-[#AFA9EC] text-sm">
                 <i className="fa-solid fa-location-dot w-4 text-center"></i>{" "}
@@ -506,7 +542,7 @@ export default function Landing() {
                 <i className="fa-solid fa-envelope text-white"></i>
               </a>
               <a
-                href="https://instagram.com/Task_flow444"
+                href="https://instagram.com/taskflow724"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-[#534AB7] rounded-lg flex items-center justify-center hover:bg-[#E1306C] transition-colors"
