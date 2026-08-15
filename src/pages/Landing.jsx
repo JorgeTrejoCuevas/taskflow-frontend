@@ -517,14 +517,14 @@ export default function Landing() {
               </a>
             </div>
 
-            {/* Mapa real UTEQ */}
+            {/* Mapa real — apunta a la dirección exacta vía geocodificación por texto */}
             <div
               className="rounded-xl overflow-hidden border border-[#534AB7]"
               style={{ height: "150px" }}
             >
               <iframe
-                title="Ubicación TaskFlow — UTEQ"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3734.2!2d-100.4198!3d20.6347!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d35b99a5c8e3f3%3A0xd9590ed9ded0e218!2sUniversidad%20Tecnol%C3%B3gica%20de%20Quer%C3%A9taro!5e0!3m2!1ses!2smx!4v1700000000000!5m2!1ses!2smx"
+                title="Ubicación TaskFlow"
+                src="https://www.google.com/maps?q=Av.+Pie+de+la+Cuesta+2501,+Quer%C3%A9taro,+Qro.&output=embed"
                 width="100%"
                 height="150"
                 style={{ border: 0 }}
@@ -533,10 +533,15 @@ export default function Landing() {
                 referrerPolicy="no-referrer-when-downgrade"
               />
             </div>
-            <p className="text-[#AFA9EC] text-xs mt-2 flex items-center gap-1">
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Av.+Pie+de+la+Cuesta+2501,+Quer%C3%A9taro,+Qro."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#AFA9EC] text-xs mt-2 flex items-center gap-1 hover:text-white transition-colors"
+            >
               <i className="fa-solid fa-location-dot"></i>
               Av. Pie de la Cuesta 2501, Querétaro, Qro.
-            </p>
+            </a>
           </div>
         </div>
 
